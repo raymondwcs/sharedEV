@@ -190,18 +190,19 @@ class App extends React.Component {
         { from: owner }
       )
     } catch (error) {
-      alert(error.message)
+      alert(error)
     }
 
     this.getEVInfo().then(evInfo => this.setState({ evInfo: evInfo }))
   }
 
   checkIn = async (tokenId) => {
-    console.log(`checkIn(${tokenId})`)
-    console.log(`ownerOf(${tokenId}): ${await this.state.sharedEVInstance.ownerOf(tokenId)}`)
-    console.log(`myAccount: ${this.state.myAccount}`)
-    let results = await this.state.sharedEVInstance.checkIn(tokenId, { from: this.state.myAccount })
-    console.log(`checkOut(), results: ${JSON.stringify(results)}`)
+    try {
+      await this.state.sharedEVInstance.checkIn(tokenId, { from: this.state.myAccount })
+    } catch (error) {
+      alert(error)
+    }
+
     this.getEVInfo().then(evInfo => this.setState({ evInfo: evInfo }))
   }
 
@@ -326,7 +327,7 @@ const whoAmI = (me, addr) => {
 const EVSelector = (props) => {
   if (!props.evInfo) return <div>Nothing!</div>
   let evInfo = props.evInfo.map(c =>
-    <Card style={{ width: '24rem' }} bg={c.checkOutDate === 0 ? "light" : "black"}>
+    <Card className="mt-2 mb-2 mr-2" style={{ width: '24rem' }} bg={c.checkOutDate === 0 ? "light" : "black"}>
       <Card.Header as="h6">Car No. {c.tokenId}</Card.Header>
       <Card.Img variant="top" src={c.tokenURI} />
       <Card.Body>
@@ -341,17 +342,6 @@ const EVSelector = (props) => {
         </Card.Subtitle>
         <div className="d-flex mt-1">
           <Card.Text>
-            <div>
-              {
-                (c.checkOutDate > 0) ?
-                  <div>
-                    <small>Occupied by {whoAmI(props.me, c.currentOwner)}
-                    since {new Date(c.checkOutDate * 1000).toLocaleString()}</small>
-                  </div>
-                  :
-                  <div><small></small></div>
-              }
-            </div>
             <ButtonToolbar>
               <ButtonGroup className="mr-2">
                 <Button className variant="primary" disabled={c.checkOutDate > 0} onClick={
@@ -372,14 +362,28 @@ const EVSelector = (props) => {
         </div>
       </Card.Body>
       <Card.Footer className="bg-transparent">
-        <div class="d-flex flex-row-reverse align-self-end mb-2 mr-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16"
-            onClick={(e) => { alert(c.tokenURI) }}
-            style={{ cursor: "pointer" }}>
-            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
-            <path d="M8.93 6.588l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
-          </svg>
-        </div>
+        <Row className="justify-content-between p-1">
+          <div>
+            {
+              (c.checkOutDate > 0) ?
+                <div>
+                  <small>In use by {whoAmI(props.me, c.currentOwner)}
+                    since {new Date(c.checkOutDate * 1000).toLocaleString()}</small>
+                </div>
+                :
+                <div><small></small></div>
+            }
+          </div>
+          {/* <div class="d-flex flex-row-reverse align-self-end mb-2 mr-2"> */}
+          <div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16"
+              onClick={(e) => { alert(c.tokenURI) }}
+              style={{ cursor: "pointer" }}>
+              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+              <path d="M8.93 6.588l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+            </svg>
+          </div>
+        </Row>
       </Card.Footer>
     </Card>
   )
@@ -397,14 +401,12 @@ const AccountSelector = (props) => {
   })
   return (
     <Form>
-      <Form.Row>
-        <Col xs="auto">
-          <Form.Label>Account</Form.Label>
-        </Col>
-        <Col xs="auto">
+      <Form.Group as={Row}>
+        <Form.Label column sm="2">Account</Form.Label>
+        <Col sm="10">
           <Form.Control
             as="select"
-            className="mr-sm-2"
+            className="mr-sm-1"
             id="account"
             custom
             value={props.currentAccount}
@@ -412,11 +414,9 @@ const AccountSelector = (props) => {
           >
             <option key="0" value="0">Choose...</option>
             {accounts}
-            {/* <option value={this.props.accounts[0]}>{this.props.accounts[0]}</option>
-              <option value={this.props.accounts[1]}>{this.props.accounts[1]}</option> */}
           </Form.Control>
         </Col>
-      </Form.Row>
+      </Form.Group>
     </Form>
   )
 }
