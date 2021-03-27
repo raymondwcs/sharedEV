@@ -361,11 +361,11 @@ const EVSelector = (props) => {
                       </Button>
               </ButtonGroup>
               <ButtonGroup className="mr-2">
-                <Button className variant="primary" disabled={c.checkOutDate === 0} onClick={
+                <Button variant="primary" disabled={c.checkOutDate === 0} onClick={
                   (event) => {
                     props.checkIn(c.tokenId)
                   }}>Return
-                      </Button>
+                </Button>
               </ButtonGroup>
             </ButtonToolbar>
           </Card.Text>
