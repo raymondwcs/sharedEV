@@ -11,15 +11,10 @@ class App extends React.Component {
     super(props)
 
     this.state = {
-      showRedeemModal: false,     // controls the display of redeem modal
-      showTransferModal: false,   // controls the display of transfer modal
-      coupon2RedeemMessage: {},   // message to be displayed in the redeem modal
-      nCoupons: 0,                // number of unredeemed coupon
       web3: null,
       evs: [],
-      eventHistory: [],           // awardCouponEvent events
-      myCoupons: [],              // copy of coupons (obtainde from the network)
-      myAccount: null             // accounts[]
+      eventHistory: [],
+      myAccount: null
     }
   }
 
@@ -41,41 +36,16 @@ class App extends React.Component {
       console.log(error)
       alert(error.message)
     })
-    // Get network provider and web3 instance.
-    // getWeb3
-    //   .then(results => {
-    //     this.setState({
-    //       web3: results.web3,
-    //       accounts: results.accounts,
-    //       network: results.network,
-    //       provider: results.provider
-    //     })
-    //     this.instantiateContract()
-    //   })
-    //   .then(instance => {
-    //     return this.getEVInfo(instance)
-    //   })
-    //   .then(evs => {
-    //     this.setState({ evs: evs })
-    //     console.log(`evs[]: ${JSON.stringify(evs)}`)
-    //     return this.updateEventHistory()    // returns evnet history
-    //   })
-    //   .then(eventHistory => {
-    //     console.log(`eventHistory: ${JSON.stringify(eventHistory)}`)
-    //   })
-    //   .catch((error) => {
-    //     console.log(error)
-    //     alert(error.message)
-    //   })
   }
 
   instantiateContract = async () => {
     const contract = require('@truffle/contract')
     const sharedEV = contract(SharedEVContract)
-    var Web3HttpProvider = require('web3-providers-http');
-    var customProvider = new Web3HttpProvider('http://localhost:8545');
-    // sharedEV.setProvider(this.state.web3.currentProvider)
-    sharedEV.setProvider(customProvider)
+    sharedEV.setProvider(this.state.web3.currentProvider)
+
+    // var Web3HttpProvider = require('web3-providers-http')
+    // var customProvider = new Web3HttpProvider('http://localhost:8545')
+    // sharedEV.setProvider(customProvider)
 
     let myAccount = this.state.accounts[9]
     this.setState({ myAccount: myAccount })
@@ -105,7 +75,7 @@ class App extends React.Component {
           <ContractAddress contractInstance={this.state.sharedEVInstance} />
         </div>
 
-        <div className="d-flex flex-row justify-content-center mt-3">
+        <div className="d-flex flex-row justify-content-center mt-3 mb-3">
           <AccountSelector
             accounts={this.state.accounts}
             switchAccount={this.switchAccount}
@@ -198,17 +168,7 @@ class App extends React.Component {
       evs = [...evs, obj]
     }
 
-    // this.setState({ evs: this.evs })
-
-    return evs
-  }
-
-  nCoupons = () => {
-    let nCoupons = 0
-    for (let c of this.state.myCoupons) {
-      if (!c.redeemed && c.tokenId !== 0) nCoupons++
-    }
-    return nCoupons
+    return evs   // this.setState({evs: evs})
   }
 
   switchAccount = (account) => {
@@ -224,13 +184,15 @@ class App extends React.Component {
     console.log(`checkOut(${tokenId}), owner: ${owner}, myAccount: ${this.state.myAccount},
     account[0]: ${this.state.accounts[0]}`)
 
-    let results = await this.state.sharedEVInstance.checkOut(
-      this.state.myAccount,
-      tokenId,
-      { from: owner }
-    )
-    console.log(`checkOut(), results: ${JSON.stringify(results)}`)
-    console.log(`checkOut(${tokenId}): ${JSON.stringify(await this.state.sharedEVInstance.sharedEVs(tokenId))}`)
+    try {
+      let results = await this.state.sharedEVInstance.checkOut(
+        this.state.myAccount,
+        tokenId,
+        { from: owner }
+      )
+    } catch (error) {
+      alert(error.message)
+    }
 
     this.getEVInfo().then(evs => this.setState({ evs: evs }))
   }
@@ -242,94 +204,6 @@ class App extends React.Component {
     let results = await this.state.sharedEVInstance.checkIn(tokenId, { from: this.state.myAccount })
     console.log(`checkOut(), results: ${JSON.stringify(results)}`)
     this.getEVInfo().then(evs => this.setState({ evs: evs }))
-  }
-
-  dismissRedeemModal = () => {
-    this.setState({ showRedeemModal: false })
-  }
-
-  displayRedeemModal = () => {
-    this.setState({ showRedeemModal: true })
-  }
-
-  dismissTransferModal = () => {
-    this.setState({ showTransferModal: false })
-  }
-
-  displayTransferModal = () => {
-    this.setState({ showTransferModal: true })
-  }
-
-  setCoupon2Redeem = (tokenId) => {
-    for (let c of this.state.myCoupons) {
-      if (c.tokenId === tokenId) {
-        // prepare the modal message...
-        let coupon2RedeemMessage = {}
-        coupon2RedeemMessage.tokenId = tokenId
-        coupon2RedeemMessage.value = c.value
-        coupon2RedeemMessage.expiryDate = c.expiryDate
-        coupon2RedeemMessage.description = c.description
-        this.setState({ coupon2RedeemMessage: coupon2RedeemMessage })
-        this.displayRedeemModal()
-      }
-    }
-  }
-
-  setCoupon2Transfer = (tokenId) => {
-    let accounts = this.state.accounts.filter(account => account !== this.state.myAccount)
-    let transferAccounts = accounts.map(a => {
-      return <option key={a} value={a}>{a}</option>
-    })
-    console.log(`transferAccount: ${transferAccounts} `)
-    this.setState({
-      transferAccounts: transferAccounts,
-      tokenId2Transfer: tokenId
-    }, () => {
-      this.displayTransferModal()
-    })
-  }
-
-  setTransferAccount = (account) => {
-    this.setState({ transferAccount: account })
-  }
-
-  transfer = async () => {
-    this.dismissTransferModal()
-    if (this.state.tokenId2Transfer && this.state.transferAccount) {
-      await this.state.couponInstance.safeTransferFrom(
-        this.state.myAccount, this.state.transferAccount, this.state.tokenId2Transfer,
-        { from: this.state.myAccount }
-      )
-      this.updateMyCoupons()
-      this.updateEventHistory()
-      alert(`Coupon[${this.state.tokenId2Transfer}]transferred to ${this.state.transferAccount} `)
-      this.setState({ transferAccount: undefined, tokenId2Transfer: undefined })
-    }
-  }
-
-  redeem = async () => {
-    this.dismissRedeemModal()
-    if (this.state.coupon2RedeemMessage) {
-      let tokenId = this.state.coupon2RedeemMessage.tokenId
-      let results = await this.state.couponInstance.redeem(tokenId, { from: this.state.myAccount })
-      /*
-      let updatedCoupons = [...this.state.myCoupons]    // make a copy of myCoupons
-      let coupon2Update = updatedCoupons[tokenId - 1]   // make a copy of the coupon to be redeemed from myCoupons
-      coupon2Update.redeemed = true
-      coupon2Update.redeemedTimeStamp = new Date().getTime() / 1000
-      updatedCoupons[tokenId - 1] = coupon2Update
-      this.setState({ myCoupons: updatedCoupons })      // replace/update myCoupons in state
-
-      this.setState({ nCoupons: this.nCoupons() })
-      this.updateEventHistory()
-      this.setState({ coupon2RedeemMessage: undefined })
-      */
-      this.updateMyCoupons()
-      this.updateEventHistory()
-      this.setState({ coupon2RedeemMessage: undefined })
-
-      alert(`Succesfully Redeemed Coupon(${tokenId}) \rTransaction ref: \r${results.tx} `)
-    }
   }
 
   updateEventHistory = async () => {
@@ -454,20 +328,22 @@ const EVSelector = (props) => {
             (c.checkOutDate === 0) ?
               <span className="text-success">Available</span>
               :
-              <span className="text-danger font-weight-bold">In use</span>
+              <span className="text-danger font-weight-bold">Not Available</span>
           }
         </Card.Subtitle>
         <div className="d-flex mt-1">
           <Card.Text>
-            {
-              (c.checkOutDate > 0) ?
-                <div>
-                  <small>{c.currentOwner}</small><br></br>
-                  <small>{new Date(c.checkOutDate * 1000).toLocaleString()}</small>
-                </div>
-                :
-                <div></div>
-            }
+            <div>
+              {
+                (c.checkOutDate > 0) ?
+                  <div>
+                    <small>in use by {"0" + c.currentOwner.substring(1, 6) + "... "}
+                    since {new Date(c.checkOutDate * 1000).toLocaleString()}</small>
+                  </div>
+                  :
+                  <div><small></small></div>
+              }
+            </div>
             <ButtonToolbar>
               <ButtonGroup className="mr-2">
                 <Button className variant="primary" disabled={c.checkOutDate > 0} onClick={
@@ -506,70 +382,6 @@ const EVSelector = (props) => {
   )
 }
 
-/*
-const CouponSelector = (props) => {
-  let couponItems = props.myCoupons.map(c =>
-    <div key={c.tokenId} className="d-flex col justify-content-center align-items-stretch mt-3">
-      <Card style={{ width: '18rem' }} bg={c.redeemed ? "light" : "black"}>
-        <Card.Header as="h6">No. {c.tokenId}</Card.Header>
-        <Card.Body>
-          <Card.Title>${c.value}</Card.Title>
-          <Card.Subtitle>
-            {c.description}
-          </Card.Subtitle>
-          <div class="d-flex">
-            {
-              c.redeemed ?
-                <Card.Text>
-                  <span className="text-success font-weight-bold">Redemmed</span><br></br>
-                  <small>{new Date(c.redeemedTimeStamp * 1000).toLocaleString()}</small>
-                </Card.Text>
-                :
-                <div>
-                  <Card.Text>
-                    Expiry Date: {c.expiryDate}
-                  </Card.Text>
-                  <ButtonToolbar>
-                    <ButtonGroup className="mr-2">
-                      <Button className variant="primary" disabled={c.redeemed} onClick={
-                        (event) => {
-                          props.setCoupon2Redeem(c.tokenId)
-                        }}>Redeem
-                      </Button>
-                    </ButtonGroup>
-                    <ButtonGroup className="mr-2">
-                      <Button className variant="primary" disabled={c.redeemed} onClick={
-                        (event) => {
-                          props.setCoupon2Transfer(c.tokenId)
-                        }}>Transfer
-                      </Button>
-                    </ButtonGroup>
-                  </ButtonToolbar>
-                </div>
-            }
-          </div>
-        </Card.Body>
-        <Card.Footer class="bg-transparent">
-          <div class="d-flex flex-row-reverse align-self-end mb-2 mr-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16"
-              onClick={(e) => { alert(c.tokenURI) }}
-              style={{ cursor: "pointer" }}>
-              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
-              <path d="M8.93 6.588l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
-            </svg>
-          </div>
-        </Card.Footer>
-      </Card >
-    </div >
-
-  )
-  return (
-    <div class="d-flex row-cols-xl-4 row-cols-lg-3 row-cols-md-2 row row-cols-sm-1">
-      {couponItems}
-    </div>
-  )
-}
-*/
 const AccountSelector = (props) => {
   let accounts = props.accounts.map(a => {
     return <option key={a} value={a}>{a}</option>
