@@ -27,11 +27,13 @@ class App extends React.Component {
       })
     }).then(() => {
       return this.instantiateContract()
-    }).then((instance) => {
+    }).then(instance => {
       return this.getEVInfo()
-    }).then((evInfo) => {
+    }).then(evInfo => {
       this.setState({ evInfo: evInfo })
-      // return this.updateEventHistory()
+      return this.updateEventHistory()
+    }).then(history => {
+      this.setState({ eventHistory: history })
     }).catch(error => {
       console.log(error)
       alert(error.message)
@@ -152,20 +154,31 @@ class App extends React.Component {
   }
 
   getEVInfo = async () => {
-    let evInfo = []
-    let totalSupply = await this.state.sharedEVInstance.totalSupply()
+    let x = await this.state.sharedEVInstance.getEVInfo()
+    let evInfo = x.map(ev => {
+      return ({
+        tokenId: ev.tokenId,
+        tokenURI: ev.tokenURI,
+        description: ev.description,
+        checkOutDate: parseInt(ev.checkOutDate),
+        currentOwner: ev.customer
+      })
+    })
 
-    for (let i = 1; i <= totalSupply; i++) {
-      let ev = await this.state.sharedEVInstance.sharedEVs(i)
-      let obj = {}
-      obj.tokenId = ev.tokenId.toNumber()
-      obj.tokenURI = ev.tokenURI
-      obj.description = ev.description
-      obj.checkOutDate = ev.checkOutDate.toNumber()
-      let currentOwner = (obj.checkOutDate > 0) ? await this.state.sharedEVInstance.ownerOf(ev.tokenId) : "0x0"
-      obj.currentOwner = currentOwner
-      evInfo = [...evInfo, obj]
-    }
+    // let evInfo = []
+    // let totalSupply = await this.state.sharedEVInstance.totalSupply()
+
+    // for (let i = 1; i <= totalSupply; i++) {
+    //   let ev = await this.state.sharedEVInstance.sharedEVs(i)
+    //   let obj = {}
+    //   obj.tokenId = ev.tokenId.toNumber()
+    //   obj.tokenURI = ev.tokenURI
+    //   obj.description = ev.description
+    //   obj.checkOutDate = ev.checkOutDate.toNumber()
+    //   let currentOwner = (obj.checkOutDate > 0) ? await this.state.sharedEVInstance.ownerOf(ev.tokenId) : "0x0"
+    //   obj.currentOwner = currentOwner
+    //   evInfo = [...evInfo, obj]
+    // }
 
     return evInfo   // this.setState({evInfo: evInfo})
   }
@@ -173,7 +186,7 @@ class App extends React.Component {
   switchAccount = (account) => {
     this.setState({ myAccount: account }, () => {
       this.getEVInfo().then(evInfo => this.setState({ evInfo: evInfo }))
-      //this.updateEventHistory()
+      this.updateEventHistory().then(history => this.setState({ eventHistory: history }))
       console.log(`switchAccount(${account}) myAccount: ${this.state.myAccount}`)
     })
   }
@@ -194,6 +207,7 @@ class App extends React.Component {
     }
 
     this.getEVInfo().then(evInfo => this.setState({ evInfo: evInfo }))
+    this.updateEventHistory().then(history => this.setState({ eventHistory: history }))
   }
 
   checkIn = async (tokenId) => {
@@ -204,56 +218,51 @@ class App extends React.Component {
     }
 
     this.getEVInfo().then(evInfo => this.setState({ evInfo: evInfo }))
+    this.updateEventHistory().then(history => this.setState({ eventHistory: history }))
+  }
+
+  compareTimeStamp = (a, b) => {
+    let eventA = a.blockTimeStamp
+    let eventB = b.blockTimeStamp
+
+    let comparison = 0
+    if (eventA > eventB) {
+      comparison = 1
+    } else {
+      comparison = -1
+    }
+    return comparison
   }
 
   updateEventHistory = async () => {
-    // redeem events
-    let events = await this.state.couponInstance.getPastEvents('redeemCouponEvent', { fromBlock: 0, toBlock: 'latest' })
-    let filteredEvents = events.filter(e => e.returnValues.customer === this.state.myAccount)
-    let filteredRedeemEvents = filteredEvents.map(e => {
+    // checkOut events
+    let events = await this.state.sharedEVInstance.getPastEvents('checkOutEvent', { fromBlock: 0, toBlock: 'latest' })
+    // let filteredEvents = events.filter(e => e.returnValues.customer === this.state.myAccount)
+    let checkOutEvents = events.map(e => {
       return ({
-        event: 'redeem',
+        event: 'checkOutEvent',
         tokenId: e.returnValues.tokenId,
         blockTimeStamp: e.returnValues.blockTimeStamp,
         transactionHash: e.transactionHash,
-        remarks: ""
+        customer: e.returnValues.customer
       })
     })
 
-    // transfer events
-    events = await this.state.couponInstance.getPastEvents('Transfer', { fromBlock: 0, toBlock: 'latest' })
-    filteredEvents = events.filter(e => {
-      return (
-        (e.returnValues.from !== "0x0000000000000000000000000000000000000000") &&
-        ((e.returnValues.from === this.state.myAccount) ||
-          (e.returnValues.to === this.state.myAccount)
-        )
-      )
+    // checkIn events
+    events = await this.state.sharedEVInstance.getPastEvents('checkInEvent', { fromBlock: 0, toBlock: 'latest' })
+    // let filteredEvents = events.filter(e => e.returnValues.customer === this.state.myAccount)
+    let checkInEvents = events.map(e => {
+      return ({
+        event: 'checkInEvent',
+        tokenId: e.returnValues.tokenId,
+        blockTimeStamp: e.returnValues.blockTimeStamp,
+        transactionHash: e.transactionHash,
+        customer: e.returnValues.customer
+      })
     })
-    let filteredTransferEvents = []
-    for (let e of filteredEvents) {
-      let results = await this.state.web3.eth.getTransaction(e.transactionHash)
-      let blockNumber = results.blockNumber
-      results = await this.state.web3.eth.getBlock(blockNumber)
-      let timestamp = results.timestamp
-      let eventObject = {}
-      eventObject.event = 'transfer'
-      eventObject.tokenId = e.returnValues.tokenId
-      eventObject.remarks =
-        (e.returnValues.from === this.state.myAccount)
-          ?
-          `To: ${e.returnValues.to} `
-          :
-          `From: ${e.returnValues.from} `
-      eventObject.blockTimeStamp = timestamp
-      eventObject.transactionHash = e.transactionHash
-      filteredTransferEvents.push(eventObject)
-    }
 
-    console.log(`filteredTransferEvents: ${JSON.stringify(filteredTransferEvents)} `)
-
-    let history = [...filteredRedeemEvents, ...filteredTransferEvents]
-    this.setState({ eventHistory: history })
+    let history = [...checkOutEvents, ...checkInEvents]
+    this.setState({ eventHistory: history.sort(this.compareTimeStamp) })
     return history
   }
 }
@@ -268,8 +277,8 @@ const EventHistory = (props) => {
     <tr key={e.transactionHash}>
       <td>{e.event}</td>
       <td>{e.tokenId}</td>
+      <td>{e.customer}</td>
       <td>{new Date(e.blockTimeStamp * 1000).toLocaleString()}</td>
-      <td>{e.remarks}</td>
     </tr>
   )
   return (
@@ -280,9 +289,9 @@ const EventHistory = (props) => {
           <thead>
             <tr>
               <th className="col-auto">Event</th>
-              <th className="col-auto">Coupon</th>
+              <th className="col-auto">Car</th>
+              <th className="col-auto">Customer</th>
               <th className="col-auto">Date/Time</th>
-              <th className="col-auto">Remarks</th>
             </tr>
           </thead>
           <tbody>

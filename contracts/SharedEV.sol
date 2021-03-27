@@ -18,6 +18,7 @@ contract SharedEV is Ownable, ERC721 {
         string description;
         string tokenURI;
         uint256 checkOutDate;  // 0 - Available
+        address customer;
     }
     
     mapping (uint256 => SharedEV) public sharedEVs;
@@ -36,7 +37,7 @@ contract SharedEV is Ownable, ERC721 {
         _setTokenURI(newTokenId, tokenURI);
 
         SharedEV memory newItem;
-        newItem = SharedEV(newTokenId,"Google Car",tokenURI,0);
+        newItem = SharedEV(newTokenId,"Google Car",tokenURI,0,owner());
         sharedEVs[newTokenId] = newItem;
         
         emit createSharedEVEvent(owner(), newTokenId, tokenURI, block.timestamp);
@@ -51,6 +52,7 @@ contract SharedEV is Ownable, ERC721 {
 
         safeTransferFrom(ownerOf(tokenId), customer, tokenId);
         sharedEVs[tokenId].checkOutDate = block.timestamp;
+        sharedEVs[tokenId].customer = customer;
 
         emit checkOutEvent(customer, tokenId, block.timestamp);
     }
@@ -61,7 +63,16 @@ contract SharedEV is Ownable, ERC721 {
 
         safeTransferFrom(msg.sender, owner(), tokenId);
         sharedEVs[tokenId].checkOutDate = 0;
+        sharedEVs[tokenId].customer = owner();
 
         emit checkInEvent(msg.sender, tokenId, block.timestamp);
+    }
+
+    function getEVInfo() public view returns (SharedEV[] memory) {
+        SharedEV[] memory evs = new SharedEV[](totalSupply());
+        for (uint tokenId = 1; tokenId <= totalSupply(); tokenId++) {
+            evs[tokenId-1] = sharedEVs[tokenId];
+        }
+        return evs;
     }
 }
