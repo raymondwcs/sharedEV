@@ -13,22 +13,22 @@ let getWeb3 = new Promise(async (resolve, reject) => {
         console.log('Injected web3 detected.');
         web3 = new Web3(provider)
     } else {
-        console.log(`No web3 instance injected, using ${process.env.REACT_APP_API_URL} defined in .env`)
-        require('dotenv').config({ path: "../.env" })
-        if (process.env.REACT_APP_MNEMONIC && process.env.REACT_APP_API_URL) {
-            // let customProvider = new HDWalletProvider({
-            //     mnemonic: {
-            //         phrase: process.env.REACT_APP_MNEMONIC
-            //     },
-            //     providerOrUrl: process.env.REACT_APP_API_URL,
-            //     numberOfAddresses: 10,
-            // })
-            var Web3HttpProvider = require('web3-providers-http');
-            var customProvider = new Web3HttpProvider('http://localhost:8545');
-            web3 = new Web3(customProvider)
-        } else {
-            return reject(new Error('getWeb3(): .env does not exist or contain the required parameters!'))
-        }
+        var Web3HttpProvider = require('web3-providers-http');
+        var customProvider = new Web3HttpProvider('http://localhost:8545');
+        web3 = new Web3(customProvider)
+        // console.log(`No web3 instance injected, using ${process.env.REACT_APP_API_URL} defined in .env`)
+        // require('dotenv').config({ path: "../.env" })
+        // if (process.env.REACT_APP_MNEMONIC && process.env.REACT_APP_API_URL) {
+        //     let customProvider = new HDWalletProvider({
+        //         mnemonic: {
+        //             phrase: process.env.REACT_APP_MNEMONIC
+        //         },
+        //         providerOrUrl: process.env.REACT_APP_API_URL,
+        //         numberOfAddresses: 10,
+        //     })
+        // } else {
+        //     return reject(new Error('getWeb3(): .env does not exist or contain the required parameters!'))
+        // }
     }
 
     let accounts = await web3.eth.getAccounts()
