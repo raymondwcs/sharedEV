@@ -12,7 +12,7 @@ class App extends React.Component {
 
     this.state = {
       web3: null,
-      evs: [],
+      evInfo: [],
       eventHistory: [],
       myAccount: null
     }
@@ -29,8 +29,8 @@ class App extends React.Component {
       return this.instantiateContract()
     }).then((instance) => {
       return this.getEVInfo()
-    }).then((evs) => {
-      this.setState({ evs: evs })
+    }).then((evInfo) => {
+      this.setState({ evInfo: evInfo })
       // return this.updateEventHistory()
     }).catch(error => {
       console.log(error)
@@ -138,7 +138,7 @@ class App extends React.Component {
         </div> */}
 
         <div className="d-flex flex-row justify-content-center align-items-stretch" >
-          <EVSelector evs={this.state.evs} checkIn={this.checkIn} checkOut={this.checkOut} />
+          <EVSelector evInfo={this.state.evInfo} me={this.state.myAccount} checkIn={this.checkIn} checkOut={this.checkOut} />
         </div>
 
         <br></br>
@@ -152,12 +152,11 @@ class App extends React.Component {
   }
 
   getEVInfo = async () => {
-    let evs = []
+    let evInfo = []
     let totalSupply = await this.state.sharedEVInstance.totalSupply()
 
     for (let i = 1; i <= totalSupply; i++) {
       let ev = await this.state.sharedEVInstance.sharedEVs(i)
-
       let obj = {}
       obj.tokenId = ev.tokenId.toNumber()
       obj.tokenURI = ev.tokenURI
@@ -165,15 +164,15 @@ class App extends React.Component {
       obj.checkOutDate = ev.checkOutDate.toNumber()
       let currentOwner = (obj.checkOutDate > 0) ? await this.state.sharedEVInstance.ownerOf(ev.tokenId) : "0x0"
       obj.currentOwner = currentOwner
-      evs = [...evs, obj]
+      evInfo = [...evInfo, obj]
     }
 
-    return evs   // this.setState({evs: evs})
+    return evInfo   // this.setState({evInfo: evInfo})
   }
 
   switchAccount = (account) => {
     this.setState({ myAccount: account }, () => {
-      this.getEVInfo().then(evs => this.setState({ evs: evs }))
+      this.getEVInfo().then(evInfo => this.setState({ evInfo: evInfo }))
       //this.updateEventHistory()
       console.log(`switchAccount(${account}) myAccount: ${this.state.myAccount}`)
     })
@@ -194,7 +193,7 @@ class App extends React.Component {
       alert(error.message)
     }
 
-    this.getEVInfo().then(evs => this.setState({ evs: evs }))
+    this.getEVInfo().then(evInfo => this.setState({ evInfo: evInfo }))
   }
 
   checkIn = async (tokenId) => {
@@ -203,7 +202,7 @@ class App extends React.Component {
     console.log(`myAccount: ${this.state.myAccount}`)
     let results = await this.state.sharedEVInstance.checkIn(tokenId, { from: this.state.myAccount })
     console.log(`checkOut(), results: ${JSON.stringify(results)}`)
-    this.getEVInfo().then(evs => this.setState({ evs: evs }))
+    this.getEVInfo().then(evInfo => this.setState({ evInfo: evInfo }))
   }
 
   updateEventHistory = async () => {
@@ -315,9 +314,18 @@ const ContractAddress = (props) => {
   )
 }
 
+const whoAmI = (me, addr) => {
+  // <small>in use by {"0" + c.currentOwner.substring(1, 6) + "... "}
+  console.log(`me ${me}, addr ${addr}`)
+  if (me === addr) {
+    return "You "
+  } else {
+    return "0" + addr.substring(1, 6) + "..."
+  }
+}
 const EVSelector = (props) => {
-  if (!props.evs) return <div>Nothing!</div>
-  let evs = props.evs.map(c =>
+  if (!props.evInfo) return <div>Nothing!</div>
+  let evInfo = props.evInfo.map(c =>
     <Card style={{ width: '24rem' }} bg={c.checkOutDate === 0 ? "light" : "black"}>
       <Card.Header as="h6">Car No. {c.tokenId}</Card.Header>
       <Card.Img variant="top" src={c.tokenURI} />
@@ -337,7 +345,7 @@ const EVSelector = (props) => {
               {
                 (c.checkOutDate > 0) ?
                   <div>
-                    <small>in use by {"0" + c.currentOwner.substring(1, 6) + "... "}
+                    <small>Occupied by {whoAmI(props.me, c.currentOwner)}
                     since {new Date(c.checkOutDate * 1000).toLocaleString()}</small>
                   </div>
                   :
@@ -377,7 +385,7 @@ const EVSelector = (props) => {
   )
   return (
     <Row className="justify-content-center">
-      {evs}
+      {evInfo}
     </Row>
   )
 }
