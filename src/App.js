@@ -47,7 +47,7 @@ class App extends React.Component {
     // var customProvider = new Web3HttpProvider('http://localhost:8545')
     // sharedEV.setProvider(customProvider)
 
-    let myAccount = this.state.accounts[9]
+    let myAccount = this.state.accounts[1]
     this.setState({ myAccount: myAccount })
     console.log(`myAccount: ${this.state.myAccount}`)
 
@@ -185,7 +185,7 @@ class App extends React.Component {
     account[0]: ${this.state.accounts[0]}`)
 
     try {
-      let results = await this.state.sharedEVInstance.checkOut(
+      await this.state.sharedEVInstance.checkOut(
         this.state.myAccount,
         tokenId,
         { from: owner }
@@ -383,7 +383,8 @@ const EVSelector = (props) => {
 }
 
 const AccountSelector = (props) => {
-  let accounts = props.accounts.map(a => {
+  const [, ...rest] = props.accounts // exclude accounts[0]
+  let accounts = rest.map(a => {
     return <option key={a} value={a}>{a}</option>
   })
   return (
