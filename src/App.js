@@ -1,6 +1,5 @@
 import React from 'react';
 // import ReactDOM from 'react-dom';
-//import { Button, ButtonGroup, ButtonToolbar, Modal, Table, Card, Container, Col, Form } from 'react-bootstrap';
 import { Button, ButtonGroup, ButtonToolbar, Container, Table, Col, Card, Form, Row } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.css';
 import getWeb3 from "./getWeb3";
@@ -45,10 +44,6 @@ class App extends React.Component {
     const sharedEV = contract(SharedEVContract)
     sharedEV.setProvider(this.state.web3.currentProvider)
 
-    // var Web3HttpProvider = require('web3-providers-http')
-    // var customProvider = new Web3HttpProvider('http://localhost:8545')
-    // sharedEV.setProvider(customProvider)
-
     let myAccount = this.state.accounts[1]
     this.setState({ myAccount: myAccount })
     console.log(`myAccount: ${this.state.myAccount}`)
@@ -85,67 +80,11 @@ class App extends React.Component {
           />
         </div>
 
-        {/* <div className="d-flex flex-row justify-content-center" >
-          <p>You have: <span className="h3 text-success font-weight-bolder">{this.state.nCoupons}</span> unused coupon(s)</p>
-        </div>
-
-        <div className="d-flex flex-row justify-content-center" >
-          <Modal show={this.state.showRedeemModal} onHide={this.dismissRedeemModal}>
-            <Modal.Header closeButton>
-              <Modal.Title>Redeem this Coupon?</Modal.Title>
-            </Modal.Header>
-
-            <Modal.Body>
-              <p className="h6">No. <span className="font-weight-bolder">
-                {(typeof this.state.coupon2RedeemMessage === "undefined") ? "" : this.state.coupon2RedeemMessage.tokenId}</span>
-              </p>
-              <ul>
-                <li>{(typeof this.state.coupon2RedeemMessage === "undefined") ? "" : this.state.coupon2RedeemMessage.description}</li>
-                <li>Value: {(typeof this.state.coupon2RedeemMessage === "undefined") ? "" : this.state.coupon2RedeemMessage.value}</li>
-                <li>Expiry Date: {(typeof this.state.coupon2RedeemMessage === "undefined") ? "" : this.state.coupon2RedeemMessage.expiryDate}</li>
-              </ul>
-            </Modal.Body >
-
-            <Modal.Footer>
-              <Button variant="secondary" onClick={this.dismissRedeemModal}>Cancel</Button>
-              <Button variant="primary" onClick={this.redeem}>Redeem</Button>
-            </Modal.Footer>
-          </Modal >
-        </div>
-
-        <div className="d-flex flex-row justify-content-center" >
-          <Modal show={this.state.showTransferModal} onHide={this.dismissTransferModal}>
-            <Modal.Header closeButton>
-              <Modal.Title>Transfer this Coupon?</Modal.Title>
-            </Modal.Header>
-
-            <Modal.Body>
-              <Form.Control
-                as="select"
-                className="mr-sm-2"
-                id="account"
-                custom
-                onChange={(e) => e.target.value !== "0" && this.setTransferAccount(e.target.value)}
-              >
-                <option key="0" value="0">Choose...</option>
-                {this.state.transferAccounts}
-              </Form.Control>
-            </Modal.Body >
-
-            <Modal.Footer>
-              <Button variant="secondary" onClick={this.dismissTransferModal}>Cancel</Button>
-              <Button variant="primary" onClick={this.transfer}>Transfer</Button>
-            </Modal.Footer>
-          </Modal >
-        </div> */}
-
         <div className="d-flex flex-row justify-content-center align-items-stretch" >
           <EVSelector evInfo={this.state.evInfo} me={this.state.myAccount} checkIn={this.checkIn} checkOut={this.checkOut} />
         </div>
 
-        <br></br>
-
-        <div className="d-flex flex-row justify-content-center align-items-stretch" >
+        <div className="d-flex flex-row justify-content-center align-items-stretch mt-2" >
           <EventHistory events={this.state.eventHistory} />
         </div>
 
