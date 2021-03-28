@@ -161,9 +161,17 @@ class App extends React.Component {
         tokenURI: ev.tokenURI,
         description: ev.description,
         checkOutDate: parseInt(ev.checkOutDate),
-        currentOwner: ev.customer
+        currentOwner: ev.customer,
       })
     })
+
+    for (let ev of evInfo) {
+      let response = await fetch(ev.tokenURI)
+      let jsonResponse = await response.json()
+      console.log(jsonResponse)
+      ev.image = jsonResponse.image
+      ev.registration = jsonResponse.registration
+    }
 
     // let evInfo = []
     // let totalSupply = await this.state.sharedEVInstance.totalSupply()
@@ -325,8 +333,6 @@ const ContractAddress = (props) => {
 }
 
 const whoAmI = (me, addr) => {
-  // <small>in use by {"0" + c.currentOwner.substring(1, 6) + "... "}
-  console.log(`me ${me}, addr ${addr}`)
   if (me === addr) {
     return "You "
   } else {
@@ -336,9 +342,9 @@ const whoAmI = (me, addr) => {
 const EVSelector = (props) => {
   if (!props.evInfo) return <div>Nothing!</div>
   let evInfo = props.evInfo.map(c =>
-    <Card className="mt-2 mb-2 mr-2" style={{ width: '24rem' }} bg={c.checkOutDate === 0 ? "light" : "black"}>
+    <Card key={c.tokenId} className="mt-2 mb-2 mr-2" style={{ width: '24rem' }} bg={c.checkOutDate === 0 ? "light" : "black"}>
       <Card.Header as="h6">Car No. {c.tokenId}</Card.Header>
-      <Card.Img variant="top" src={c.tokenURI} />
+      <Card.Img variant="top" src={c.image} />
       <Card.Body>
         <Card.Title>{c.description}</Card.Title>
         <Card.Subtitle>
@@ -349,26 +355,22 @@ const EVSelector = (props) => {
               <span className="text-danger font-weight-bold">Not Available</span>
           }
         </Card.Subtitle>
-        <div className="d-flex mt-1">
-          <Card.Text>
-            <ButtonToolbar>
-              <ButtonGroup className="mr-2">
-                <Button className variant="primary" disabled={c.checkOutDate > 0} onClick={
-                  (event) => {
-                    props.checkOut(c.tokenId)
-                  }}>Use
-                      </Button>
-              </ButtonGroup>
-              <ButtonGroup className="mr-2">
-                <Button variant="primary" disabled={c.checkOutDate === 0} onClick={
-                  (event) => {
-                    props.checkIn(c.tokenId)
-                  }}>Return
-                </Button>
-              </ButtonGroup>
-            </ButtonToolbar>
-          </Card.Text>
-        </div>
+        {/* <Card.Text className="d-flex mt-1"> */}
+        <ButtonToolbar>
+          <ButtonGroup className="mr-2">
+            <Button className variant="primary" disabled={c.checkOutDate > 0} onClick={
+              (event) => {
+                props.checkOut(c.tokenId)
+              }}>Use</Button>
+          </ButtonGroup>
+          <ButtonGroup className="mr-2">
+            <Button variant="primary" disabled={c.checkOutDate === 0} onClick={
+              (event) => {
+                props.checkIn(c.tokenId)
+              }}>Return</Button>
+          </ButtonGroup>
+        </ButtonToolbar>
+        {/* </Card.Text> */}
       </Card.Body>
       <Card.Footer className="bg-transparent">
         <Row className="justify-content-between p-1">
@@ -385,7 +387,7 @@ const EVSelector = (props) => {
           </div>
           {/* <div class="d-flex flex-row-reverse align-self-end mb-2 mr-2"> */}
           <div>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16"
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-info-circle" viewBox="0 0 16 16"
               onClick={(e) => { alert(c.tokenURI) }}
               style={{ cursor: "pointer" }}>
               <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
@@ -405,6 +407,7 @@ const EVSelector = (props) => {
 
 const AccountSelector = (props) => {
   const [, ...rest] = props.accounts // exclude accounts[0]
+  const currentAccount = (props.currentAccount) ? props.currentAccount : "0x"
   let accounts = rest.map(a => {
     return <option key={a} value={a}>{a}</option>
   })
@@ -418,7 +421,7 @@ const AccountSelector = (props) => {
             className="mr-sm-1"
             id="account"
             custom
-            value={props.currentAccount}
+            value={currentAccount}
             onChange={(e) => e.target.value !== "0" && props.switchAccount(e.target.value)}
           >
             <option key="0" value="0">Choose...</option>

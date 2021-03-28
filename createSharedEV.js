@@ -1,9 +1,7 @@
-const TOKEN_URI_01 = "https://gateway.pinata.cloud/ipfs/QmTWLi3k8iDnwPDnbEqGVDpy5hYi3gytbX48K5UUibcHJ4"
-const TOKEN_URI_02 = "https://gateway.pinata.cloud/ipfs/QmRoJCXRpiu8ci2tavj2Uex6pfMpUBq1UKfuwvPBT56RuZ"
-const TOKEN_URI_03 = "https://gateway.pinata.cloud/ipfs/QmbiiNo8Siog7qEJe2t428vbvkiXA9gfycMRnw2erXjbmP"
-const TOKEN_URI_04 = "https://gateway.pinata.cloud/ipfs/QmcPdE7UDXi5krxfB2eLkM3yp5uswMDVrRaAjPZNE5QCTE"
-const TOKEN_URI_05 = "https://gateway.pinata.cloud/ipfs/QmPaDfL8qmVxePKxu41AqPQCW9PHyGTeER6hNM1LfXYxLQ"
-const TOKEN_URI_06 = "https://gateway.pinata.cloud/ipfs/QmZBA3btnGjpfjvSgQejqTWuajEtM3R6m91VBD6W21CBo9"
+const TOKEN_URI_01 = "https://gateway.pinata.cloud/ipfs/QmbTCNfiAZk9jPZLYgyEWNXTwrDM1R1eTfB73XVZk12k43"
+const TOKEN_URI_02 = "https://gateway.pinata.cloud/ipfs/Qma2MwjWSX3KPYrMWhs34bYwMgcjiyF3hSgjwQikaDSi7Z"
+const TOKEN_URI_03 = "https://gateway.pinata.cloud/ipfs/Qmf2CbdjBS955SxDHrE2BxsaEoZvK9AfJnRuYdWL9jDSEr"
+const TOKEN_URI_04 = "https://gateway.pinata.cloud/ipfs/QmbjZdTZHrw5tyGLpGx2q61Yxm3fXo9o4EDqfDZq2EKeDr"
 
 module.exports = async function main(callback) {
     try {
@@ -17,8 +15,6 @@ module.exports = async function main(callback) {
         await instance.createSharedEV(TOKEN_URI_02)
         await instance.createSharedEV(TOKEN_URI_03)
         await instance.createSharedEV(TOKEN_URI_04)
-        await instance.createSharedEV(TOKEN_URI_05)
-        await instance.createSharedEV(TOKEN_URI_06)
 
         console.log(`totalSupply(): ${await instance.totalSupply()}`)
 
