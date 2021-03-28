@@ -168,25 +168,9 @@ class App extends React.Component {
     for (let ev of evInfo) {
       let response = await fetch(ev.tokenURI)
       let jsonResponse = await response.json()
-      console.log(jsonResponse)
       ev.image = jsonResponse.image
       ev.registration = jsonResponse.registration
     }
-
-    // let evInfo = []
-    // let totalSupply = await this.state.sharedEVInstance.totalSupply()
-
-    // for (let i = 1; i <= totalSupply; i++) {
-    //   let ev = await this.state.sharedEVInstance.sharedEVs(i)
-    //   let obj = {}
-    //   obj.tokenId = ev.tokenId.toNumber()
-    //   obj.tokenURI = ev.tokenURI
-    //   obj.description = ev.description
-    //   obj.checkOutDate = ev.checkOutDate.toNumber()
-    //   let currentOwner = (obj.checkOutDate > 0) ? await this.state.sharedEVInstance.ownerOf(ev.tokenId) : "0x0"
-    //   obj.currentOwner = currentOwner
-    //   evInfo = [...evInfo, obj]
-    // }
 
     return evInfo   // this.setState({evInfo: evInfo})
   }
