@@ -4,8 +4,10 @@ const SharedEV = artifacts.require("SharedEV");
 const { BN, expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
 const { expect, assert } = require('chai');
 
-const TOKEN_URI_01 = "https://gateway.pinata.cloud/ipfs/QmTWLi3k8iDnwPDnbEqGVDpy5hYi3gytbX48K5UUibcHJ4"
-const TOKEN_URI_02 = "https://gateway.pinata.cloud/ipfs/QmRoJCXRpiu8ci2tavj2Uex6pfMpUBq1UKfuwvPBT56RuZ"
+// const TOKEN_URI_01 = "https://gateway.pinata.cloud/ipfs/QmTWLi3k8iDnwPDnbEqGVDpy5hYi3gytbX48K5UUibcHJ4"
+// const TOKEN_URI_02 = "https://gateway.pinata.cloud/ipfs/QmRoJCXRpiu8ci2tavj2Uex6pfMpUBq1UKfuwvPBT56RuZ"
+const TOKEN_URI_01 = "https://gateway.pinata.cloud/ipfs/QmbTCNfiAZk9jPZLYgyEWNXTwrDM1R1eTfB73XVZk12k43"
+const TOKEN_URI_02 = "https://gateway.pinata.cloud/ipfs/Qma2MwjWSX3KPYrMWhs34bYwMgcjiyF3hSgjwQikaDSi7Z"
 
 contract("createSharedEV() test", async accounts => {
     it("create 2 shared EV", async () => {
@@ -31,6 +33,9 @@ contract("createSharedEV() test", async accounts => {
 
         let balance = await instance.balanceOf(owner)
         assert.equal(balance, 2)
+
+        let evs = await instance.getEVInfo()
+        assert.equal(evs.length, 2)
     })
 
     it("accounts[1] checkout 1st sharedEV", async () => {
