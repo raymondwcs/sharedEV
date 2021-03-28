@@ -77,7 +77,7 @@ class App extends React.Component {
           <ContractAddress contractInstance={this.state.sharedEVInstance} />
         </div>
 
-        <div className="d-flex flex-row justify-content-center mt-3 mb-3">
+        <div className="d-flex flex-row justify-content-center mt-2 mb-2">
           <AccountSelector
             accounts={this.state.accounts}
             switchAccount={this.switchAccount}
@@ -356,7 +356,7 @@ const EVSelector = (props) => {
           }
         </Card.Subtitle>
         {/* <Card.Text className="d-flex mt-1"> */}
-        <ButtonToolbar>
+        <ButtonToolbar className="mt-2">
           <ButtonGroup className="mr-2">
             <Button className variant="primary" disabled={c.checkOutDate > 0} onClick={
               (event) => {
