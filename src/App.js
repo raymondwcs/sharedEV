@@ -143,7 +143,8 @@ class App extends React.Component {
         { from: owner }
       )
     } catch (error) {
-      alert(error)
+      console.log(JSON.stringify(error))
+      alert(error.message)
     }
 
     this.getEVInfo().then(evInfo => this.setState({ evInfo: evInfo }))
@@ -154,7 +155,8 @@ class App extends React.Component {
     try {
       await this.state.sharedEVInstance.checkIn(tokenId, { from: this.state.myAccount })
     } catch (error) {
-      alert(error)
+      console.log(JSON.stringify(error))
+      alert(error.message)
     }
 
     this.getEVInfo().then(evInfo => this.setState({ evInfo: evInfo }))
