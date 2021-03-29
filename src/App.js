@@ -44,8 +44,17 @@ class App extends React.Component {
     const sharedEV = contract(SharedEVContract)
     sharedEV.setProvider(this.state.web3.currentProvider)
 
-    let myAccount = this.state.accounts[1]
-    this.setState({ myAccount: myAccount })
+    // are we using ganache-cli?
+    if (this.state.accounts.length > 1) {
+      this.setState({
+        myAccount: this.state.accounts[9],          // exclude the last account
+        accounts: this.state.accounts.slice(1, 10)
+      })
+    } else {
+      this.setState({
+        myAccount: this.state.accounts[0],
+      })
+    }
     console.log(`myAccount: ${this.state.myAccount}`)
 
     let instance = await sharedEV.deployed()
@@ -329,9 +338,9 @@ const EVSelector = (props) => {
 }
 
 const AccountSelector = (props) => {
-  const [, ...rest] = props.accounts // exclude accounts[0]
   const currentAccount = (props.currentAccount) ? props.currentAccount : "0x"
-  let accounts = rest.map(a => {
+
+  let accounts = props.accounts.map(a => {
     return <option key={a} value={a}>{a}</option>
   })
   return (
