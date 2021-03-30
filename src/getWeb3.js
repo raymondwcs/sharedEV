@@ -3,12 +3,19 @@ import detectEthereumProvider from '@metamask/detect-provider'
 
 var web3 = null
 const getWeb3 = new Promise(async (resolve, reject) => {
-    const provider = await detectEthereumProvider()
-    // From now on, this should always be true:
-    // provider === window.ethereum
-    if (provider) {
-        console.log('Injected web3 detected.');
-        web3 = new Web3(provider)
+    if (process.env.REACT_APP_USE_METAMASK === "true") {
+        const provider = await detectEthereumProvider()
+        // From now on, this should always be true:
+        // provider === window.ethereum
+        if (provider) {
+            console.log('Injected web3 detected.');
+            web3 = new Web3(provider)
+            try {
+                await provider.request({ method: 'eth_requestAccounts' });
+            } catch (error) {
+                console.error(error);
+            }
+        }
     } else {
         const Web3HttpProvider = require('web3-providers-http');
         require('dotenv').config({ path: "../.env" })
@@ -18,34 +25,31 @@ const getWeb3 = new Promise(async (resolve, reject) => {
         web3 = new Web3(customProvider)
     }
 
-    if (provider == window.ethereum) {
-        try {
-            await provider.request({ method: 'eth_requestAccounts' });
-        } catch (error) {
-            console.error(error);
-        }
-    } else {
+    if (web3) {
         const accounts = await web3.eth.getAccounts()
+        const network = await getNetwork(web3)
+        const results = {
+            web3: web3,
+            accounts: accounts,
+            network: network,
+        }
+        return resolve(results)
+    } else {
+        return reject(new Error("web3 error: web3 is null!"))
     }
-    const network = await getNetwork(web3)
-
-    const results = {
-        web3: web3,
-        accounts: accounts,
-        network: network,
-    }
-
-    return resolve(results)
 })
 
 const getNetwork = (web3) => {
     return new Promise(async (resolve, reject) => {
-        let network = {}
-        network['id'] = await web3.eth.net.getId()
-        network['networkType'] = await web3.eth.net.getNetworkType()
-        // console.log(`network: ${JSON.stringify(network)}`)
-
-        return resolve(network)
+        try {
+            let network = {}
+            network['id'] = await web3.eth.net.getId()
+            network['networkType'] = await web3.eth.net.getNetworkType()
+            return resolve(network)
+        } catch (error) {
+            return reject(new Error(error))
+        }
     })
 }
+
 export default getWeb3
