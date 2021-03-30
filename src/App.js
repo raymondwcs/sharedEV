@@ -18,25 +18,26 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    getWeb3.then(results => {
-      this.setState({
-        web3: results.web3,
-        accounts: results.accounts,
-        network: results.network,
+    getWeb3
+      .then(results => {
+        this.setState({
+          web3: results.web3,
+          accounts: results.accounts,
+          network: results.network,
+        })
+      }).then(() => {
+        return this.instantiateContract()
+      }).then(instance => {
+        return this.getEVInfo()
+      }).then(evInfo => {
+        this.setState({ evInfo: evInfo })
+        return this.updateEventHistory()
+      }).then(history => {
+        this.setState({ eventHistory: history })
+      }).catch(error => {
+        console.log(error)
+        alert(error.message)
       })
-    }).then(() => {
-      return this.instantiateContract()
-    }).then(instance => {
-      return this.getEVInfo()
-    }).then(evInfo => {
-      this.setState({ evInfo: evInfo })
-      return this.updateEventHistory()
-    }).then(history => {
-      this.setState({ eventHistory: history })
-    }).catch(error => {
-      console.log(error)
-      alert(error.message)
-    })
   }
 
   instantiateContract = async () => {
