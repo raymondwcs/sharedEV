@@ -18,7 +18,15 @@ const getWeb3 = new Promise(async (resolve, reject) => {
         web3 = new Web3(customProvider)
     }
 
-    const accounts = await web3.eth.getAccounts()
+    if (provider == window.ethereum) {
+        try {
+            await provider.request({ method: 'eth_requestAccounts' });
+        } catch (error) {
+            console.error(error);
+        }
+    } else {
+        const accounts = await web3.eth.getAccounts()
+    }
     const network = await getNetwork(web3)
 
     const results = {

@@ -38,7 +38,7 @@ contract("createSharedEV() test", async accounts => {
         assert.equal(evs.length, 2)
     })
 
-    it("accounts[1] checkout 1st sharedEV", async () => {
+    it("Normal checkout - accounts[1] checkout 1st sharedEV", async () => {
         const instance = await SharedEV.deployed()
         const owner = await instance.owner()
 
@@ -55,25 +55,25 @@ contract("createSharedEV() test", async accounts => {
         assert.equal(who, accounts[1])
     })
 
-    it("accounts[2] checkout 1st sharedEV", async () => {
+    it("Abnomral checkout accounts[2] checkout 1st sharedEV", async () => {
         const instance = await SharedEV.deployed()
         const owner = await instance.owner()
         await expectRevert(instance.checkOut(accounts[2], 1, { from: owner }), "Not Available")
     })
 
-    it("accounts[1] checkout 2nd sharedEV", async () => {
+    it("Abnormal checkout accounts[1] checkout 2nd sharedEV", async () => {
         const instance = await SharedEV.deployed()
         const owner = await instance.owner()
         await expectRevert(instance.checkOut(accounts[1], 2, { from: owner }), "Exceed Max Checkout Limit")
     })
 
-    it("accounts[2] checkin 1st sharedEV", async () => {
+    it("Abnormal checkin - accounts[2] checkin someone else's sharedEV", async () => {
         const instance = await SharedEV.deployed()
 
         await expectRevert(instance.checkIn(1, { from: accounts[2] }), "Not Owner")
     })
 
-    it("accounts[1] checkin 1st sharedEV", async () => {
+    it("Normal checkin - accounts[1] checkin her sharedEV", async () => {
         const instance = await SharedEV.deployed()
         const owner = await instance.owner()
 
