@@ -21,8 +21,9 @@ const App = () => {
       setWeb3(results.web3)
       setAccounts(results.accounts)
       setNetwork(results.network)
-      // are we using ganache-cli?
-      if (results.accounts.length > 1) {
+      return results
+    }).then(results => {
+      if (results.accounts.length > 1) {  // are we using ganache-cli?
         setMyAccount(results.accounts[9]) // exclude the last account
         setAccounts(results.accounts.slice(1, 10))
       } else {
@@ -39,7 +40,7 @@ const App = () => {
     }).catch(error => {
       console.error(error)
     })
-  }, [])  // run once - as in ComponentDidMount()
+  }, [])  // this runs once - as in ComponentDidMount()
 
   React.useEffect(() => {
     if (sharedEVInstance) {
@@ -54,7 +55,6 @@ const App = () => {
             currentOwner: ev.customer,
           })
         })
-
         for (let ev of evInfo) {
           let response = await fetch(ev.tokenURI)
           let jsonResponse = await response.json()
@@ -117,13 +117,6 @@ const App = () => {
   const switchAccount = (account) => {
     setMyAccount(account)
   }
-  // switchAccount = (account) => {
-  //   this.setState({ myAccount: account }, () => {
-  //     this.getEVInfo().then(evInfo => this.setState({ evInfo: evInfo }))
-  //     this.updateEventHistory().then(history => this.setState({ eventHistory: history }))
-  //     console.log(`switchAccount(${account}) myAccount: ${this.state.myAccount}`)
-  //   })
-  // }
 
   const checkOut = async (tokenId) => {
     let owner = await sharedEVInstance.owner()
@@ -268,6 +261,7 @@ const whoAmI = (me, addr) => {
     return "0" + addr.substring(1, 6) + "..."
   }
 }
+
 const EVSelector = (props) => {
   if (!props.evInfo) return <div></div>
   let evInfo = props.evInfo.map(c =>
@@ -337,34 +331,32 @@ const EVSelector = (props) => {
 const AccountSelector = (props) => {
   if (props.currentAccount === undefined || props.currentAccount === null) {
     return <div></div>
+  } else {
+    let accounts = props.accounts.map(a => {
+      return <option key={a} value={a}>{a}</option>
+    })
+
+    return (
+      <Form>
+        <Form.Group as={Row}>
+          <Form.Label column sm="2">Account</Form.Label>
+          <Col sm="10">
+            <Form.Control
+              as="select"
+              className="mr-sm-1"
+              id="account"
+              custom
+              value={props.currentAccount}
+              onChange={(e) => e.target.value !== "0" && props.switchAccount(e.target.value)}
+            >
+              <option key="0" value="0">Choose...</option>
+              {accounts}
+            </Form.Control>
+          </Col>
+        </Form.Group>
+      </Form>
+    )
   }
-
-  const currentAccount = (props.currentAccount) ? props.currentAccount : "0x"
-
-  let accounts = props.accounts.map(a => {
-    return <option key={a} value={a}>{a}</option>
-  })
-
-  return (
-    <Form>
-      <Form.Group as={Row}>
-        <Form.Label column sm="2">Account</Form.Label>
-        <Col sm="10">
-          <Form.Control
-            as="select"
-            className="mr-sm-1"
-            id="account"
-            custom
-            value={currentAccount}
-            onChange={(e) => e.target.value !== "0" && props.switchAccount(e.target.value)}
-          >
-            <option key="0" value="0">Choose...</option>
-            {accounts}
-          </Form.Control>
-        </Col>
-      </Form.Group>
-    </Form>
-  )
 }
 
 export default App;
