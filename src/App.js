@@ -136,8 +136,6 @@ const App = () => {
 
     setEVInfoUpdated(evInfoUpdated ? false : true)
     setEventHistoryUpdated(eventHistoryUpdated ? false : true)
-    // this.getEVInfo().then(evInfo => this.setState({ evInfo: evInfo }))
-    // this.updateEventHistory().then(history => this.setState({ eventHistory: history }))
   }
 
   const checkIn = async (tokenId) => {
@@ -150,8 +148,6 @@ const App = () => {
 
     setEVInfoUpdated(evInfoUpdated ? false : true)
     setEventHistoryUpdated(eventHistoryUpdated ? false : true)
-    // this.getEVInfo().then(evInfo => this.setState({ evInfo: evInfo }))
-    // this.updateEventHistory().then(history => this.setState({ eventHistory: history }))
   }
 
   if (!web3) {
@@ -195,7 +191,7 @@ const App = () => {
       </Container >
     );
   }
-}
+}  // end of App()
 
 const EventHistory = (props) => {
   if (props.events === null || props.events === undefined || props.events.length === 0) {
