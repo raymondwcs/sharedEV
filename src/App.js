@@ -269,7 +269,7 @@ const whoAmI = (me, addr) => {
   }
 }
 const EVSelector = (props) => {
-  if (!props.evInfo) return <div>Nothing!</div>
+  if (!props.evInfo) return <div></div>
   let evInfo = props.evInfo.map(c =>
     <Card key={c.tokenId} className="mt-2 mb-2 mr-2" style={{ width: '24rem' }} bg={c.checkOutDate === 0 ? "light" : "black"}>
       <Card.Header as="h6">Car No. {c.tokenId}</Card.Header>
@@ -344,6 +344,7 @@ const AccountSelector = (props) => {
   let accounts = props.accounts.map(a => {
     return <option key={a} value={a}>{a}</option>
   })
+
   return (
     <Form>
       <Form.Group as={Row}>
