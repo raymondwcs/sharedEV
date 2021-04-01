@@ -211,7 +211,7 @@ const EventHistory = (props) => {
     <div >
       <div className="d-flex justify-content-center">Transaction History</div>
       <div className="d-flex justify-content-center">
-        <Table striped bordered hover size="sm">
+        <Table striped bordered hover responsive size="sm">
           <thead>
             <tr>
               <th className="col-auto">Event</th>
