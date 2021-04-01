@@ -134,8 +134,8 @@ const App = () => {
       alert(error.message)
     }
 
-    setEVInfoUpdated(evInfoUpdated ? false : true)
-    setEventHistoryUpdated(eventHistoryUpdated ? false : true)
+    setEVInfoUpdated(!evInfoUpdated)
+    setEventHistoryUpdated(!eventHistoryUpdated)
   }
 
   const checkIn = async (tokenId) => {
@@ -146,8 +146,8 @@ const App = () => {
       alert(error.message)
     }
 
-    setEVInfoUpdated(evInfoUpdated ? false : true)
-    setEventHistoryUpdated(eventHistoryUpdated ? false : true)
+    setEVInfoUpdated(!evInfoUpdated)
+    setEventHistoryUpdated(!eventHistoryUpdated)
   }
 
   if (!web3) {
@@ -180,9 +180,7 @@ const App = () => {
           />
         </div>
 
-        <div className="d-flex flex-row justify-content-center align-items-stretch" >
-          <EVSelector evInfo={evInfo} me={myAccount} checkIn={checkIn} checkOut={checkOut} />
-        </div>
+        <EVSelector evInfo={evInfo} me={myAccount} checkIn={checkIn} checkOut={checkOut} />
 
         <div className="d-flex flex-row justify-content-center align-items-stretch mt-2" >
           <EventHistory events={eventHistory} />
@@ -261,7 +259,7 @@ const whoAmI = (me, addr) => {
 const EVSelector = (props) => {
   if (!props.evInfo) return <div></div>
   let evInfo = props.evInfo.map(c =>
-    <Card key={c.tokenId} className="mt-2 mb-2 mr-2" style={{ width: '24rem' }} bg={c.checkOutDate === 0 ? "light" : "black"}>
+    <Card key={c.tokenId} className="mt-2 mb-2 mr-2 flex-fill" style={{ width: '20rem' }} bg={c.checkOutDate === 0 ? "light" : "black"}>
       <Card.Header as="h6">Car No. {c.tokenId}</Card.Header>
       <Card.Img variant="top" src={c.image} />
       <Card.Body>
@@ -318,9 +316,9 @@ const EVSelector = (props) => {
     </Card>
   )
   return (
-    <Row className="justify-content-center">
+    <div className="d-flex flex-wrap align-items-stretch justify-content-center">
       {evInfo}
-    </Row>
+    </div>
   )
 }
 
